@@ -1,4 +1,4 @@
-<div align="center"> <img src="https://github.com/user-attachments/assets/aaaf3572-6284-47c4-a52c-490cf7351f05">  
+<div align="center"> <img src="https://github.com/user-attachments/assets/24418ef3-3b22-4106-8352-04cebf4daecf">  
 
 **Ingco, Larz Byron E.**
 
@@ -68,7 +68,7 @@ The main UI elements and logic are encapsulated within the Tkinter frames and fu
 ---
 
 ## III. Sustainable Development Goal (SDG) 🏗️
-<div align="center"> <img src="https://github.com/user-attachments/assets/d8142159-ada2-4349-ba0f-2b338a11356a"> 
+<div align="center"> <img src="https://github.com/user-attachments/assets/3b5d1779-48a7-486a-a57d-bddca83edb1f"> 
 
 ### SDG 3: Good Health and Well-Being </div>
 The Macro Mate system plays a crucial role in promoting good health and well-being by empowering users to take charge of their physical fitness and nutrition. Here’s how it supports SDG 3:
