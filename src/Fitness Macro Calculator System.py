@@ -1,6 +1,57 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
+import sqlite3
 
+# Database setup
+def initialize_db():
+    global conn, cursor
+    conn = sqlite3.connect("fitness_app.db")
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            gender TEXT,
+            age INTEGER,
+            weight REAL,
+            height REAL,
+            activity_level TEXT,
+            phase TEXT,
+            tdee REAL,
+            protein REAL,
+            fat REAL,
+            carbs REAL
+        )
+    """)
+    conn.commit()
+initialize_db()
+# Save user data to the database
+def save_to_db(user_data, tdee, macronutrients):
+    cursor.execute("""
+        INSERT INTO users (name, gender, age, weight, height, activity_level, phase, tdee, protein, fat, carbs)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        user_data['name'],
+        user_data['gender'],
+        user_data['age'],
+        user_data['weight'],
+        user_data['height'],
+        user_data['activity_level'],
+        user_data['phase'],
+        tdee,
+        macronutrients['protein'],
+        macronutrients['fat'],
+        macronutrients['carbs']
+    ))
+    conn.commit()
+
+def validate_name_input(new_value):
+    # This will allow only alphabets and spaces, no numbers or special characters
+    if all(c.isalpha() or c.isspace() for c in new_value) or new_value == "":
+        return True
+    else:
+        messagebox.showerror("Invalid Input", "Name must contain only letters!")
+        return False
 
 
 # Functions for Calculations
@@ -10,7 +61,6 @@ def calculate_bmr(gender, weight, height, age):
     elif gender == "Female":
         return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age)
 
-
 def calculate_tdee(bmr, activity_level):
     activity_factors = {
         "Light Exercise (1-2 days/week)": 1.2,
@@ -19,7 +69,6 @@ def calculate_tdee(bmr, activity_level):
         "Intense Exercise (2x per day)": 1.725,
     }
     return bmr * activity_factors[activity_level]
-
 
 def calculate_macronutrients(tdee, phase):
     if phase == "Maintenance":
@@ -45,7 +94,6 @@ def calculate_macronutrients(tdee, phase):
         "carbs": carb_calories / 4,
     }
 
-
 # Navigation between screens
 def show_activity_screen():
     if not name_entry.get() or not gender_var.get() or not age_entry.get() or not weight_entry.get() or not height_entry.get():
@@ -68,29 +116,23 @@ def show_activity_screen():
     main_screen.pack_forget()
     activity_screen.pack()
 
-
 def show_phase_screen():
     if not activity_var.get():
         messagebox.showerror("Error", "Please select an activity level!")
         return
-
     user_data["activity_level"] = activity_var.get()
     activity_screen.pack_forget()
     phase_screen.pack()
-
 
 def show_result_screen():
     if not phase_var.get():
         messagebox.showerror("Error", "Please select a dietary phase!")
         return
-
     user_data["phase"] = phase_var.get()
 
     # Perform calculations
-    bmr = calculate_bmr(
-        user_data["gender"], user_data["weight"], user_data["height"], user_data["age"]
-    )
-    tdee = round(calculate_tdee(bmr, user_data["activity_level"]))  # Rounded TDEE
+    bmr = calculate_bmr(user_data["gender"], user_data["weight"], user_data["height"], user_data["age"])
+    tdee = round(calculate_tdee(bmr, user_data["activity_level"])) 
     weekly_calories = tdee * 7
     macronutrients = calculate_macronutrients(tdee, user_data["phase"])
 
@@ -99,16 +141,19 @@ def show_result_screen():
     fat = round(macronutrients["fat"])
     carbs = round(macronutrients["carbs"])
 
-    # Update result text
+    save_to_db(user_data, tdee, macronutrients)  # Save results to database
+
     result_text.set(
         f"Greetings, {user_data['name']}.\n"
-        f"You are a {user_data['age']}-year-old {user_data['gender'].lower()} who weighs {user_data['weight']} kg and \nheight of {user_data['height']} cm tall."
-        f" You perform {user_data['phase'].lower()} exercises \nand {user_data['activity_level'].lower()}."
-        f" Also you intake \n{tdee} calories per day, and {weekly_calories} calories per week.\n\n"
-        f"Macronutrient\n"
-        f"   - Protein: {protein} grams per day\n"
-        f"   - Fats: {fat} grams per day\n"
-        f"   - Carbs: {carbs} grams per day\n"
+        f"You are a {user_data['age']}-year-old {user_data['gender'].lower()} who weighs {user_data['weight']} kg and\n"
+        f"height of {user_data['height']} cm tall. You perform {user_data['phase'].lower()} exercises \nand "
+        f"{user_data['activity_level'].lower()}.\n\n"
+        f"Daily Intake: {tdee} calories\n"
+        f"Weekly Intake: {weekly_calories} calories\n\n"
+        f"Macronutrients:\n"
+        f"  - Protein: {protein} grams\n"
+        f"  - Fats: {fat} grams\n"
+        f"  - Carbs: {carbs} grams"
     )
 
     phase_screen.pack_forget()
@@ -116,18 +161,17 @@ def show_result_screen():
 
 
 def show_workout_schedule():
-    result_screen.pack_forget()  # Hide result screen
-    workout_schedule_screen.pack()  # Show workout schedule screen
+    result_screen.pack_forget()  
+    workout_schedule_screen.pack()  
 
 
 def back_to_results():
-    workout_schedule_screen.pack_forget()  # Hide workout schedule screen
-    result_screen.pack()  # Show result screen
+    workout_schedule_screen.pack_forget() 
+    result_screen.pack()  
 
 
 # Function to show workout for a specific day
 def show_day_workout(day):
-    # Workout plans for each day
     workout_plans = {
         "Monday": """Chest Exercise
 3 sets / 8 - 12 reps
@@ -214,6 +258,8 @@ Leg Exercise
    - lunges""",
 
         "Sunday": """Cardio
+   - basketball
+   - jogging
 ABS Exercise
 3 sets / 8 - 12 reps
    - crunches
@@ -221,37 +267,35 @@ ABS Exercise
    - leg raise
    - plank (30 seconds to 1 minute)"""
     }
-
-    # Update the workout label with the workout plan for the selected day
     workout_label.config(text=f"Workout plan for {day}:\n\n{workout_plans[day]}")
 
-
-# User Data
 user_data = {}
 
 # Main Window
 root = tk.Tk()
 root.title("Fitness Macro Calculator System")
 root.geometry("550x610")
-root.config(bg="#b3e0ff")  # Set background to a soft blue color
+root.config(bg="#b3e0ff")  
 
 # Set styles
 style = ttk.Style()
-style.configure("TButton", font=("Arial", 12, "bold"), padding=6, background="#0056b3", foreground="black")  # Set text color to black
+style.configure("TButton", font=("Arial", 12, "bold"), padding=6, background="#0056b3", foreground="black")  
 style.configure("TCombobox", font=("Arial", 12), padding=5)
 
 # === MAIN SCREEN ===
 main_screen = tk.Frame(root, bg="#b3e0ff", padx=20, pady=20)
 
-tk.Label(main_screen, text="Welcome to Macro Mate!", font=("Arial", 20, "bold"), bg="#b3e0ff", fg="#004d80").pack(pady=15)  # Blue text
+tk.Label(main_screen, text="Welcome to Macro Mate!", font=("Arial", 20, "bold"), bg="#b3e0ff", fg="#004d80").pack(pady=15)  
 
 tk.Label(main_screen, text="Name:", bg="#b3e0ff", font=("Arial", 12, "bold")).pack(anchor="w", pady=2)
-name_entry = ttk.Entry(main_screen, width=40)
+validate_name = root.register(validate_name_input)  
+
+name_entry = ttk.Entry(main_screen, width=40, validate="key", validatecommand=(validate_name, "%P"))
 name_entry.pack(pady=5)
 
 tk.Label(main_screen, text="Gender:", bg="#b3e0ff", font=("Arial", 12, "bold")).pack(anchor="w", pady=2)
 gender_var = tk.StringVar()
-gender_combobox = ttk.Combobox(main_screen, textvariable=gender_var, values=["Male", "Female"], width=38)
+gender_combobox = ttk.Combobox(main_screen, textvariable=gender_var, values=["Male", "Female"], width=38, state="readonly")
 gender_combobox.pack(pady=5)
 
 tk.Label(main_screen, text="Age:", bg="#b3e0ff", font=("Arial", 12, "bold")).pack(anchor="w", pady=2)
@@ -280,7 +324,7 @@ activity_combobox = ttk.Combobox(activity_screen, textvariable=activity_var, val
     "Moderate Exercise (3-5 days/week)",
     "Heavy Exercise (6-7 days/week)",
     "Intense Exercise (2x per day)"
-], width=40)
+], width=40, state="readonly")
 activity_combobox.pack(pady=5)
 
 ttk.Button(activity_screen, text="Next", command=show_phase_screen).pack(pady=15)
@@ -290,7 +334,7 @@ phase_screen = tk.Frame(root, bg="#b3e0ff", padx=20, pady=20)
 tk.Label(phase_screen, text="Select Dietary Phase", font=("Arial", 16, "bold"), bg="#b3e0ff", fg="#004d80").pack(pady=15)
 
 phase_var = tk.StringVar()
-phase_combobox = ttk.Combobox(phase_screen, textvariable=phase_var, values=["Maintenance", "Cutting", "Bulking"], width=40)
+phase_combobox = ttk.Combobox(phase_screen, textvariable=phase_var, values=["Maintenance", "Cutting", "Bulking"], width=40, state="readonly")
 phase_combobox.pack(pady=5)
 
 ttk.Button(phase_screen, text="Next", command=show_result_screen).pack(pady=15)
@@ -302,6 +346,93 @@ result_label = tk.Label(result_screen, textvariable=result_text, font=("Arial", 
 result_label.pack(pady=20)
 
 ttk.Button(result_screen, text="See Workout Schedule", command=show_workout_schedule).pack(pady=15)
+
+def update_user_data():
+    result_screen.pack_forget()
+    main_screen.pack()
+
+    name_entry.delete(0, tk.END)
+    name_entry.insert(0, user_data.get("name", "")) 
+    name_entry.config(state="disabled") 
+
+    gender_var.set(user_data.get("gender", ""))
+    gender_combobox.config(state="disabled") 
+
+    # Make age, weight, height editable
+    age_entry.delete(0, tk.END)
+    age_entry.insert(0, user_data.get("age", ""))
+
+    weight_entry.delete(0, tk.END)
+    weight_entry.insert(0, user_data.get("weight", ""))
+
+    height_entry.delete(0, tk.END)
+    height_entry.insert(0, user_data.get("height", ""))
+
+    # Disable the activity level combobox (read-only)
+    activity_combobox.config(state="disabled")  
+
+    # Disable the phase combobox (read-only)
+    phase_combobox.config(state="disabled")  
+def update_user_data():
+    result_screen.pack_forget()
+    main_screen.pack()
+
+    # Populate the existing user data in the fields so the user can update only age, weight, height
+    name_entry.delete(0, tk.END)
+    name_entry.insert(0, user_data.get("name", "")) 
+    name_entry.config(state="disabled") 
+
+    gender_var.set(user_data.get("gender", ""))  
+    gender_combobox.config(state="disabled")
+
+    # Make age, weight, height editable
+    age_entry.delete(0, tk.END)
+    age_entry.insert(0, user_data.get("age", ""))
+
+    weight_entry.delete(0, tk.END)
+    weight_entry.insert(0, user_data.get("weight", ""))
+
+    height_entry.delete(0, tk.END)
+    height_entry.insert(0, user_data.get("height", ""))
+
+    # Disable the activity level combobox (read-only)
+    activity_combobox.config(state="disabled") 
+
+    # Disable the phase combobox (read-only)
+    phase_combobox.config(state="disabled")  
+# === RESULT SCREEN ===
+def reset_all_fields():
+    user_data.clear()
+    name_entry.delete(0, tk.END)
+    gender_var.set("")
+    age_entry.delete(0, tk.END)
+    weight_entry.delete(0, tk.END)
+    height_entry.delete(0, tk.END)
+    activity_var.set("")
+    phase_var.set("")
+
+    name_entry.config(state="normal")
+    gender_combobox.config(state="normal")
+    activity_combobox.config(state="normal")
+    phase_combobox.config(state="normal")
+
+    # Go back to the first screen
+    result_screen.pack_forget()  
+    main_screen.pack()
+
+result_screen = tk.Frame(root, bg="#b3e0ff", padx=20, pady=20)
+result_text = tk.StringVar()
+result_label = tk.Label(result_screen, textvariable=result_text, font=("Arial", 12), bg="#b3e0ff", fg="black")
+result_label.pack(pady=20)
+
+ttk.Button(result_screen, text="See Workout Schedule", command=show_workout_schedule).pack(pady=15)
+
+# Adding the Reset Button (this will completely reset and start from the beginning)
+ttk.Button(result_screen, text="Reset", command=reset_all_fields).pack(pady=10)
+
+# Adding the Update Button
+ttk.Button(result_screen, text="Update Info", command=update_user_data).pack(pady=10)
+
 
 # === WORKOUT SCHEDULE SCREEN ===
 workout_schedule_screen = tk.Frame(root, bg="#b3e0ff", padx=20, pady=20)
