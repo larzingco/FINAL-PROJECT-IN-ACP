@@ -129,7 +129,6 @@ ACP FINAL PROJECT
   │
   ├── src/
   │   ├── Fitness Macro Calculator System.py              # Main file
-  ├── fitness_app.db              # Data Base
   └── README.md                   # Documentation
 ```
 
