@@ -64,6 +64,18 @@ The main UI elements and logic are encapsulated within the Tkinter frames and fu
    - tkinter: The core library for building the GUI, handling user interactions, and managing different screens.
    - ttk: For additional styling of widgets like buttons and comboboxes.
    - messagebox: For displaying pop-up messages and alerts for user notifications and error handling.
+  
+7. **Database Integration with SQLite**
+   - SQLite is integrated to store user data persistently:
+     - sqlite3.connect("fitness_app.db") establishes a connection to the SQLite database.
+     - cursor.execute runs SQL commands like CREATE TABLE and INSERT INTO.
+     - save_to_db() inserts user data and calculated results into the database, enabling future retrieval or analysis.
+    
+8. **Data Persistence & Update Handling**
+   - The system allows users to update certain fields (age, weight, height) while keeping others locked (name, gender, activity level, phase):
+     - Pre-filled Fields: update_user_data() reopens the main screen with pre-filled data while locking name and gender fields, preserving integrity.
+     - Reset Functionality: reset_all_fields() clears all inputs and resets the program to its initial state.
+
 
 ---
 
@@ -117,7 +129,7 @@ ACP FINAL PROJECT
   │
   ├── src/
   │   ├── Fitness Macro Calculator System.py              # Main file
-  │
+  ├── fitness_app.db              # Data Base
   └── README.md                   # Documentation
 ```
 
@@ -137,7 +149,9 @@ ACP FINAL PROJECT
 
 **Result Screen:**
    - View your results, including BMR, TDEE, daily and weekly calorie intake, and macronutrient breakdown.
-   - Click "See Workout Schedule" to view your personalized workout plan.
+   - "See Workout Schedule" Navigates to a personalized workout plan screen.
+   - "Update Info" Allows users to modify age, weight, and height without resetting other inputs. Name and gender fields are disabled to avoid major data changes while allowing precise updates for TDEE recalculation.
+   - "Reset" Clears all user inputs and resets the application to the Main Screen for new entries.
 
 **Workout Schedule Screen:**
    - Click on the buttons for each day (e.g., Monday, Tuesday) to view the workout plan for that day.
