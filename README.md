@@ -107,7 +107,7 @@ The Macro Mate system plays a crucial role in promoting good health and well-bei
 --- 
 
 ## IV. Instructions for Running the Program 📌
-**Prerequisites: 📜**
+## **Prerequisites: 📜**
    1. Python (version 3.x or higher)
      - Download and install Python from python.org if not already installed.
    2. Tkinter (for GUI interface)
@@ -115,7 +115,7 @@ The Macro Mate system plays a crucial role in promoting good health and well-bei
    3. IDE or Text Editor
      - You can use any IDE like Visual Studio Code, PyCharm, Sublime Text, or Notepad++ to run your code.
       
-**Steps to Run the Program: 🏃‍♂️**
+## **Steps to Run the Program: 🏃‍♂️**
    1. Download the Code:
      - Copy or clone the Python script to your local machine. If you are using GitHub, you can use the following commands:
       ```bash
@@ -123,7 +123,7 @@ The Macro Mate system plays a crucial role in promoting good health and well-bei
    2. Run the Program:
      - Open a terminal (or command prompt) and navigate to the folder containing the Python script.
 
-**Folder Structure: 📂**
+## **Folder Structure: 📂**
   ```bash
 ACP FINAL PROJECT
   │
@@ -132,8 +132,7 @@ ACP FINAL PROJECT
   └── README.md                   # Documentation
 ```
 
-**Program Controls: 📚**
-
+## **Program Controls: 🕹️**
 **Main Screen:**
    - Input your name, age, weight, height, and gender.
    - Click "Next" to proceed to the Activity Level screen.
@@ -156,7 +155,7 @@ ACP FINAL PROJECT
    - Click on the buttons for each day (e.g., Monday, Tuesday) to view the workout plan for that day.
    - Click "Back to Results" to return to the result screen.
 
-**Functionality Controls: ⚙️**
+## **Functionality Controls: ⚙️**
    - Submit and Proceed: After filling in the details, click "Next" to proceed to the next screen.
    - Calculate Results: The program will calculate your daily calorie needs, macronutrient requirements, and display a tailored workout schedule.
    - Workout Plan: The program offers a personalized workout schedule for each day of the week, which you can view by clicking on the respective days.
